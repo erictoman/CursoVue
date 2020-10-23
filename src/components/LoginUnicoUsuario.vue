@@ -1,27 +1,11 @@
 <template>
   <div id="app">
-    <!--<img alt="Vue logo" src="./assets/logo.png" />-->
-    <!--<p v-for="(animal, index) in this.animales" :key="index">{{ animal }}</p>-->
-    <!--<div v-if="boolean">Hola</div>-->
-    <!--
-      <br />
-      <input placeholder="Input 1" type="text" v-model="texto" />
-      <button @click="this.mostrarVariable">Mostrar</button>
-    -->
-    <!--
-    <div v-for="(n, i) in 5" :key="i">
-      Usuario {{ n
-      }}<input type="text" v-model="usuarios[i].nombre" /> Contraseña {{ n
-      }}<input type="password" v-model="usuarios[i].contraseña" />
-    </div>
-    -->
     Usuario: <input type="text" v-model="usuario[0].nombre" /><br />
     Contraseña <input type="password" v-model="usuario[0].contraseña" /><br />
     <button @click="this.mostrarVariable">Login</button>
     <br />
     <p v-show="mensaje.length > 0" style="color: red">{{ mensaje }}</p>
     <p v-show="loginExitoso" style="color: green">Inicio de sesion correcto</p>
-    <!--<button @click="this.fetchData">Boton fetch</button>-->
   </div>
 </template>
 
@@ -91,27 +75,6 @@ export default {
       console.log(data);
     },
   },
-  /*
-  beforeCreate() {
-    console.log("Before create");
-  },
-  created() {
-    console.log("Created");
-  },
-  beforeMount() {
-    console.log("Before mount");
-  },
-  mounted() {
-    console.log("Mounted");
-  },
-  beforeUpdate() {
-    console.log("Before update");
-    alert(5);
-  },
-  updated() {
-    console.log("Update");
-    alert(6);
-  },*/
 };
 </script>
 
