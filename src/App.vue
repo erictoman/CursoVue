@@ -1,67 +1,39 @@
 <template>
   <div id="app">
-    <div v-for="(n, i) in 5" :key="i">
-      Usuario {{ n
-      }}<input type="text" v-model="usuariosform.nombre[i]" /> Contraseña {{ n
-      }}<input type="password" v-model="usuariosform.contraseña[i]" />
-    </div>
-    <button @click="this.mostrarVariable">Login</button>
-    <br />
-    <p v-show="mensaje.length > 0" style="color: red">{{ mensaje }}</p>
-    <p v-show="loginExitoso" style="color: green">Inicio de sesion correcto</p>
+    <button class="button is-medium" @click="snackbar">
+      Lanzar snackbar
+    </button>
   </div>
 </template>
 
 <script>
-var user = "admin";
-var pass = "admin";
 export default {
   name: "App",
   data() {
-    return {
-      loginExitoso: false,
-      usuariosform: {
-        nombre: [],
-        contraseña: [],
-      },
-      mensaje: "",
-    };
+    return {};
   },
   components: {},
   methods: {
-    mostrarVariable() {
-      this.mensaje = "";
-      this.loginExitoso = false;
-      for (var i = 0; i < this.usuariosform.nombre.length; i++) {
-        if (
-          this.usuariosform.nombre[i] === undefined ||
-          this.usuariosform.contraseña[i] === undefined
-        ) {
-          this.mensaje =
-            this.mensaje +
-            "Usuario o contraseña vacios en la posicion " +
-            (i + 1);
-        } else {
-          this.loginExitoso = true;
-        }
-      }
+    llamadaEventoCustom(texto) {
+      console.log("Texto recibido: " + texto);
     },
-    iniciarSesion() {
-      if (this.camposllenos()) {
-        if (this.usuario === user && this.password === pass) {
-          this.mensaje = "";
-          this.loginExitoso = true;
-        } else {
-          this.mensaje = "Usuario y contraseña incorrectos";
-          this.loginExitoso = false;
-        }
-      } else {
-        this.mensaje = "Algun campo esta vacio";
-        this.loginExitoso = false;
-      }
+    snackbar() {
+      this.$buefy.snackbar.open({
+        message: "Snackbar presionado",
+        type: "is-primary",
+        position: "is-bottom",
+        actionText: "Lanzar toast",
+        indefinite: true,
+        onAction: () => {
+          this.$buefy.toast.open({
+            message: "Action pressed",
+            queue: false,
+          });
+        },
+      });
     },
-    computed: {},
   },
+  computed: {},
 };
 </script>
 
