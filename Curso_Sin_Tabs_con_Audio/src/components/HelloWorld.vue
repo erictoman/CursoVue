@@ -6,8 +6,9 @@
         <b-field label="Simple">
           <b-slider
             v-model="value"
-            :max="this.cancion.duracion"
+            :max="this.duracion"
             :custom-formatter="this.minutosSegundos"
+            @change="this.setposition"
           ></b-slider>
         </b-field>
         <unicon
@@ -15,7 +16,6 @@
           @click="
             () => {
               this.toggleplay();
-              this.play();
             }
           "
           name="play"
@@ -23,7 +23,11 @@
         />
         <unicon
           v-if="isplaying"
-          @click="this.toggleplay"
+          @click="
+            () => {
+              this.toggleplay();
+            }
+          "
           name="pause"
           fill="royalblue"
         />
@@ -48,8 +52,8 @@ export default {
       cancion: {
         titulo: "Cancion 1",
         artista: "Artista 1",
-        duracion: 60,
       },
+      duracion: null,
       player: null,
     };
   },
@@ -58,17 +62,25 @@ export default {
   },
   methods: {
     toggleplay() {
+      this.play();
       this.isplaying = !this.isplaying;
     },
+    contar() {
+      setTimeout(async () => {
+        if (this.isplaying) {
+          this.value = this.player.seek();
+          this.contar();
+        }
+      }, 1000);
+    },
     play() {
+      this.duracion = this.player.duration();
       if (this.isplaying) {
         this.player.pause();
-        setTimeout(async () => {
-          this.value++;
-          this.play();
-        }, 1000);
+      } else {
+        this.contar();
+        this.player.play();
       }
-      this.player.play();
     },
     stop() {
       this.player.stop();
@@ -80,7 +92,11 @@ export default {
     minutosSegundos(val) {
       var minutos = parseInt(val / 60);
       var segundos = val % 60 < 10 ? "0" + (val % 60) : val % 60;
-      return minutos + ":" + segundos;
+      return parseInt(minutos) + ":" + parseInt(segundos);
+    },
+    setposition(val) {
+      this.player.seek(val);
+      this.value = val;
     },
   },
 };
