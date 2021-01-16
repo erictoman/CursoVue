@@ -25,7 +25,7 @@ export default {
   methods: {
     redirect() {
       window.location =
-        "https://freesound.org/apiv2/oauth2/authorize/?client_id=Azk196NWwiPosN9Sclpj&response_type=code";
+        "https://accounts.spotify.com/authorize?client_id=144a532590174190845706166bcbaee3&response_type=code&redirect_uri=http://localhost:8080/auth";
     },
   },
 };

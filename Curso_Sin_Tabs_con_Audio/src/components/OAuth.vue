@@ -9,7 +9,7 @@
         v-if="data"
         @click="
           (item) => {
-            this.reproducir(item.id);
+            this.reproducir(item.uri);
           }
         "
         :data="data.data"
@@ -20,10 +20,8 @@
 </template>
 
 <script>
-const prefijo = "https://freesound.org/apiv2/";
-const url = prefijo + "oauth2/access_token/";
-const urlbusqueda = prefijo + "search/text/";
-const urldescarga = prefijo + "sounds/";
+const intercambio = "https://accounts.spotify.com/api/token";
+import SpotifyAPI from "spotify-web-api-js";
 export default {
   data() {
     return {
@@ -31,49 +29,71 @@ export default {
       query: "",
       token: "",
       data: null,
+      spotify: new SpotifyAPI(),
+      player: null,
     };
   },
   beforeMount() {
     if (!localStorage.getItem("token")) {
-      this.code = this.$route.query.code;
-      this.intercambiar();
+      if (!this.$route.query.error) {
+        this.code = this.$route.query.code;
+        this.intercambiar();
+      }
     } else {
       this.token = localStorage.getItem("token");
+      this.spotify.setAccessToken(this.token);
+      window.onSpotifyWebPlaybackSDKReady = () => {
+        var player = window.Spotify.Player({
+          name: "Web Playback SDK Quick Start Player",
+          getOAuthToken: (cb) => {
+            cb(this.token);
+          },
+        });
+        player.connect().then((success) => {
+          if (success) {
+            console.log(
+              "The Web Playback SDK successfully connected to Spotify!"
+            );
+          }
+        });
+      };
     }
   },
   methods: {
     intercambiar() {
-      var formData = new FormData();
-      formData.append("client_id", "Azk196NWwiPosN9Sclpj");
-      formData.append(
-        "client_secret",
-        "HqXUXX2vkuBw5q95KtWXb2R5tjZzC4e1i3nwdVc2"
-      );
-      formData.append("grant_type", "authorization_code");
-      formData.append("code", this.code);
-      fetch(url, { method: "POST", body: formData })
+      const data = new URLSearchParams();
+      data.append("grant_type", "authorization_code");
+      data.append("code", this.code);
+      data.append("redirect_uri", "http://localhost:8080/auth");
+      var cliend_id = "144a532590174190845706166bcbaee3";
+      var client_secret = "6614e28f03a14197a11675f5f0365352";
+      let token = "Basic " + btoa(`${cliend_id}:${client_secret}`);
+      fetch(intercambio, {
+        method: "POST",
+        body: data,
+        headers: {
+          Authorization: token,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      })
         .then((response) => response.json())
-        .catch((error) => console.error("Error:", error))
         .then(async (respuesta) => {
+          if (respuesta.error) {
+            this.$router.push("/");
+          } else {
+            console.log("OK");
+          }
           if (respuesta.access_token) {
-            this.persistencia(respuesta.access_token);
+            this.persistencia(respuesta.access_token, respuesta.refresh_token);
           }
         });
     },
     buscar() {
-      var urlnuevo = urlbusqueda + "?query=" + this.query;
-      console.log(urlnuevo);
-      fetch(urlnuevo, {
-        method: "GET",
-        headers: {
-          Authorization: "Bearer " + this.token,
-        },
-      })
-        .then((response) => response.json())
-        .catch((error) => console.error("Error:", error))
-        .then((respuesta) => {
+      this.spotify.searchTracks(this.query).then(
+        (resultados) => {
+          console.log(resultados.tracks.items);
           var info = {
-            data: respuesta.results,
+            data: resultados.tracks.items,
             columns: [
               {
                 field: "name",
@@ -83,30 +103,21 @@ export default {
             ],
           };
           this.data = info;
-        });
-    },
-    persistencia(token) {
-      localStorage.setItem("token", token);
-    },
-    async reproducir(id) {
-      var urldescargaunico = urldescarga + id + "/download/";
-      fetch(urldescargaunico, {
-        method: "GET",
-        headers: {
-          Authorization: "Bearer " + this.token,
         },
-      })
-        .then(async (response) => {
-          let reader = response.body.getReader();
-          var audio = await reader.read();
-          console.log("AUDIO OK");
-          var blob = new Blob([audio.value], { type: "audio/mp3" });
-          var url = window.URL.createObjectURL(blob);
-          window.audio = new Audio();
-          window.audio.src = url;
-          window.audio.play();
-        })
-        .catch((error) => console.error("Error:", error));
+        (err) => {
+          console.error(err);
+        }
+      );
+      /*
+      
+      */
+    },
+    persistencia(token, refresh_token) {
+      localStorage.setItem("token", token);
+      localStorage.setItem("refresh_token", refresh_token);
+    },
+    async reproducir(uri) {
+      console.log(uri);
     },
   },
 };
