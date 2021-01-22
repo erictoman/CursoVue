@@ -24,8 +24,10 @@ export default {
   beforeMount() {},
   methods: {
     redirect() {
-      window.location =
-        "https://accounts.spotify.com/authorize?client_id=144a532590174190845706166bcbaee3&response_type=code&redirect_uri=http://localhost:8080/auth";
+      const scopes = ["streaming", "user-read-email", "user-read-private"];
+      window.location = `https://accounts.spotify.com/authorize?client_id=144a532590174190845706166bcbaee3&response_type=code&redirect_uri=http://localhost:8080/auth&scope=${scopes.join(
+        "%20"
+      )}`;
     },
   },
 };

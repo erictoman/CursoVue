@@ -11,6 +11,7 @@
     "buefy": "^0.9.4",
     "core-js": "^3.6.5",
     "howler": "^2.2.1",
+    "spotify-web-api-js": "^1.5.1",
     "vue": "^2.6.11",
     "vue-router": "^3.4.9",
     "vue-unicons": "^2.3.0"
