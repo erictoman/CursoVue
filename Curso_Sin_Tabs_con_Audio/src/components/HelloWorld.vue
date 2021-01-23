@@ -38,12 +38,12 @@
 </template>
 
 <script>
-import { Howl } from "howler";
-import cancion from "../Canciones/cancion.mp3";
+//import { Howl } from "howler";
+//import cancion from "../Canciones/cancion.mp3";
 export default {
   name: "HelloWorld",
   props: {
-    msg: String,
+    Player: Object,
   },
   data() {
     return {
@@ -58,7 +58,8 @@ export default {
     };
   },
   beforeMount() {
-    this.player = new Howl({ src: [cancion] });
+    console.log(this.Player);
+    /*this.player = new Howl({ src: [cancion] });*/
   },
   methods: {
     toggleplay() {
@@ -68,34 +69,39 @@ export default {
     contar() {
       setTimeout(async () => {
         if (this.isplaying) {
-          this.value = this.player.seek();
+          this.Player.getCurrentState().then((state) => {
+            this.value = state.position;
+          });
           this.contar();
         }
       }, 1000);
     },
     play() {
-      this.duracion = this.player.duration();
+      this.Player.getCurrentState().then((state) => {
+        this.duracion = state.duration;
+      });
       if (this.isplaying) {
-        this.player.pause();
+        this.Player.pause();
       } else {
         this.contar();
-        this.player.play();
+        this.Player.play();
       }
     },
     stop() {
-      this.player.stop();
+      this.Player.stop();
       if (this.isplaying) {
         this.toggleplay();
       }
       this.value = 0;
     },
     minutosSegundos(val) {
+      val = val * 1000;
       var minutos = parseInt(val / 60);
       var segundos = val % 60 < 10 ? "0" + (val % 60) : val % 60;
       return parseInt(minutos) + ":" + parseInt(segundos);
     },
     setposition(val) {
-      this.player.seek(val);
+      this.Player.seek(val);
       this.value = val;
     },
   },

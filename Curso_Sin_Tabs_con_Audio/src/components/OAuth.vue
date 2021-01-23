@@ -1,7 +1,12 @@
 <template>
   <div class="section">
     <div class="section has-text-centered">
-      <div class="section">Procesando: {{ this.code }}</div>
+      <Player
+        v-if="this.duracion"
+        :Player="this.player"
+        :duracion="this.duracion"
+      />
+      <!--<div class="section">Procesando: {{ this.code }}</div>-->
       Query
       <b-input v-model="query" />
       <b-button @click="this.buscar">Buscar</b-button>
@@ -22,6 +27,7 @@
 <script>
 const intercambio = "https://accounts.spotify.com/api/token";
 import SpotifyAPI from "spotify-web-api-js";
+import Player from "./HelloWorld";
 export default {
   data() {
     return {
@@ -32,8 +38,10 @@ export default {
       spotify: new SpotifyAPI(),
       player: null,
       device: null,
+      duracion: null,
     };
   },
+  components: { Player },
   beforeMount() {
     if (!localStorage.getItem("token")) {
       if (!this.$route.query.error) {
@@ -43,62 +51,26 @@ export default {
     } else {
       this.token = localStorage.getItem("token");
       this.spotify.setAccessToken(this.token);
-      /*
-      window.onSpotifyWebPlaybackSDKReady = () => {
-        console.log("OK PLAYER");
-        var player = new window.Spotify.Player({
-          name: "Web Playback SDK Quick Start Player",
-          getOAuthToken: () => {
-            return this.token;
-          },
-        });
-        player.addListener("initialization_error", ({ message }) => {
-          console.error(message);
-        });
-        player.addListener("authentication_error", ({ message }) => {
-          console.error(message);
-        });
-        player.addListener("account_error", ({ message }) => {
-          console.error(message);
-        });
-        player.addListener("playback_error", ({ message }) => {
-          console.error(message);
-        });
-        player.addListener("player_state_changed", (state) => {
-          console.log(state);
-        });
-        player.addListener("ready", ({ device_id }) => {
-          console.log("Ready with Device ID", device_id);
-        });
-        player.addListener("not_ready", ({ device_id }) => {
-          console.log("Device ID has gone offline", device_id);
-        });
-        player.connect().then((res) => {
-          console.log(res);
-        });
-        this.player = player;
-      };*/
-
       window.onSpotifyWebPlaybackSDKReady = () => {
         const player = new window.Spotify.Player({
-          name: "Web Playback SDK Template",
+          name: "Cliente VUE",
           getOAuthToken: (cb) => {
             cb(this.token);
           },
         });
-
         // Error handling
         player.on("initialization_error", (e) => console.error(e));
-        player.on("authentication_error", (e) => console.error(e));
+        player.on("authentication_error", (e) => {
+          console.error(e.message);
+        });
         player.on("account_error", (e) => console.error(e));
         player.on("playback_error", (e) => console.error(e));
-
         // Playback status updates
         player.on("player_state_changed", (state) => {
-          console.log(state);
-          this.player.resume();
+          this.duracion = state.duration;
+          this.player = player;
+          this.player.pause();
         });
-
         // Ready
         player.on("ready", (data) => {
           console.log("Ready with Device ID", data.device_id);
@@ -106,7 +78,6 @@ export default {
         });
         // Connect to the player!
         player.connect();
-        this.player = player;
       };
     }
   },
@@ -155,7 +126,6 @@ export default {
         }
       );
     },
-
     buscar() {
       this.spotify.searchTracks(this.query).then(
         (resultados) => {
